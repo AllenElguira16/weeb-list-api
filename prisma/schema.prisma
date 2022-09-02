@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator tsed {
+  provider = "tsed-prisma"
+}
+
+model Anime {
+  id           String       @id @unique @default(uuid())
+  title        String
+  type         AnimeType?
+  episodes     Int?
+  duration     String?
+  rating       AnimeRating?
+  status       AnimeStatus?
+  season       AnimeSeason?
+  synopsis     String?
+  airtimeFrom  DateTime?
+  airtimeTo    DateTime?
+  picture      String
+  genres       String[]
+  themes       String[]
+  demographics String[]
+  createdAt    DateTime     @default(now()) @db.Timestamptz()
+  updatedAt    DateTime     @updatedAt @db.Timestamptz()
+
+  otherTitles    Title[]
+  characters     CharacterRole[]
+  voiceActors    VoiceActor[]
+  staffs         Staff[]
+  anime          AnimeRelations[] @relation(name: "anime")
+  animeRelations AnimeRelations[] @relation(name: "relatedAnime")
+}
+
+model Character {
+  id          String   @id @unique @default(uuid())
+  picture     String
+  englishName String
+  kanjiName   String?
+  nicknames   String[]
+  about       String?
+  createdAt   DateTime @default(now()) @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @db.Timestamptz()
+
+  anime       CharacterRole[]
+  voiceActors VoiceActor[]
+}
+
+model Person {
+  id          String   @id @unique @default(uuid())
+  picture     String
+  englishName String
+  kanjiName   String?
+  about       String?
+  createdAt   DateTime @default(now()) @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @db.Timestamptz()
+
+  staffPositions   Staff[]
+  voiceActingRoles VoiceActor[]
+}
+
+model CharacterRole {
+  id          String @id @unique @default(uuid())
+  role        String
+  characterId String
+  animeId     String
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  anime     Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model VoiceActor {
+  id          String @id @unique @default(uuid())
+  language    String
+  animeId     String
+  characterId String
+  personId    String
+
+  anime     Anime     @relation(fields: [animeId], references: [id])
+  character Character @relation(fields: [characterId], references: [id])
+  person    Person    @relation(fields: [personId], references: [id])
+}
+
+model Staff {
+  id        String   @id @unique @default(uuid())
+  positions String[]
+  personId  String
+  animeId   String
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  anime  Anime  @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Title {
+  id       String @id @unique @default(uuid())
+  language String
+  title    String
+  animeId  String
+
+  anime Anime @relation(fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model AnimeRelations {
+  id             String            @id @unique @default(uuid())
+  type           AnimeRelationType
+  animeId        String
+  relatedAnimeId String
+
+  anime        Anime @relation("anime", fields: [animeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  relatedAnime Anime @relation("relatedAnime", fields: [relatedAnimeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum AnimeType {
+  TV
+  MOVIE
+  OVA
+  SPECIAL
+  ONA
+}
+
+enum AnimeRelationType {
+  PREQUEL
+  SEQUEL
+  ALTERNATE_SETTING
+  ALTERNATE_VERSION
+  SIDE_STORY
+  SUMMARY
+  FULL_STORY
+  PARENT_STORY
+  SPIN_OFF
+  CHARACTERS
+  OTHERS
+}
+
+enum AnimeStatus {
+  AIRING
+  COMPLETE
+  UPCOMING
+}
+
+enum AnimeSeason {
+  SPRING
+  SUMMER
+  FALL
+  WINTER
+}
+
+enum AnimeRating {
+  G
+  PG
+  PG13
+  R
+  R18
+}
