@@ -24,7 +24,7 @@ const round = (n: number) => (Math.round(n * 100) / 100).toFixed(2);
 export const main = async () => {
   try {
     await MalWebScraper.init();
-    const malAnimeIDs = await getIDs();
+    const malAnimeIDs = await getIDs(false);
     const configPath = path.resolve(__dirname, './data/config.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as {
       current_index: number;
@@ -124,7 +124,7 @@ export const main = async () => {
       );
     }
     console.error(error);
-    console.log(`an error occured, restarting...`);
+    console.log(`an error occurred, restarting...`);
     await main();
   }
 };
